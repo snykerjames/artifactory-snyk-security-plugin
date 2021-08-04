@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static io.snyk.plugins.artifactory.configuration.ArtifactProperty.*;
-import static io.snyk.plugins.artifactory.configuration.PluginConfiguration.SCANNER_BLOCK_ON_API_FAILURE;
+import static io.snyk.plugins.artifactory.configuration.PluginConfiguration.*;
 import static io.snyk.sdk.util.Predicates.distinctByKey;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
@@ -79,11 +79,26 @@ public class ScannerModule {
 
   protected Optional<PackageScanner> getScannerForPackageType(String path) {
     if (path.endsWith(".jar")) {
-      return Optional.of(mavenScanner);
+      if (configurationModule.getPropertyOrDefault(SCANNER_PACKAGE_TYPE_MAVEN).equals("true")) {
+        return Optional.of(mavenScanner);
+      } else {
+        LOG.debug("Path will not be scanned. Maven repository scanning is disabled. Path: {}", path);
+        return Optional.empty();
+      }
     } else if (path.endsWith(".tgz")) {
-      return Optional.of(npmScanner);
+      if (configurationModule.getPropertyOrDefault(SCANNER_PACKAGE_TYPE_NPM).equals("true")) {
+        return Optional.of(npmScanner);
+      } else {
+        LOG.debug("Path will not be scanned. NPM repository scanning is disabled. Path: {}", path);
+        return Optional.empty();
+      }
     } else if (path.endsWith(".whl") || path.endsWith(".tar.gz") || path.endsWith(".zip") || path.endsWith(".egg")) {
-      return Optional.of(pythonScanner);
+      if (configurationModule.getPropertyOrDefault(SCANNER_PACKAGE_TYPE_PYPI).equals("true")) {
+        return Optional.of(pythonScanner);
+      } else {
+        LOG.debug("Path will not be scanned. PyPi repository scanning is disabled. Path: {}", path);
+        return Optional.empty();
+      }
     } else {
       return Optional.empty();
     }

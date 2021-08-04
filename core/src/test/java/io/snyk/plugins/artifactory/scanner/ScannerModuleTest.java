@@ -16,7 +16,7 @@ import org.mockito.Mockito;
 import javax.annotation.Nonnull;
 import java.util.Properties;
 
-import static io.snyk.plugins.artifactory.configuration.PluginConfiguration.API_ORGANIZATION;
+import static io.snyk.plugins.artifactory.configuration.PluginConfiguration.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -59,6 +59,24 @@ public class ScannerModuleTest {
     assertTrue(sm.getScannerForPackageType("unknown").isEmpty());
   }
 
+  @Test
+  void testGetScannerForPackageType_shouldBeEmptyForDisabledScanners() {
+    Properties properties = new Properties();
+    properties.put(SCANNER_PACKAGE_TYPE_MAVEN.propertyKey(), "false");
+    properties.put(SCANNER_PACKAGE_TYPE_NPM.propertyKey(), "false");
+    properties.put(SCANNER_PACKAGE_TYPE_PYPI.propertyKey(), "false");
+    ConfigurationModule configurationModule = new ConfigurationModule(properties);
+
+    ScannerModule sm = new ScannerModule(
+      configurationModule,
+      mock(Repositories.class),
+      mock(SnykClient.class)
+    );
+
+    assertTrue(sm.getScannerForPackageType("myArtifact.jar").isEmpty());
+    assertTrue(sm.getScannerForPackageType("myArtifact.tgz").isEmpty());
+    assertTrue(sm.getScannerForPackageType("myArtifact.whl").isEmpty());
+  }
 
   ScanTestSetup createScannerSpyModuleForTest(FileLayoutInfo fileLayoutInfo) throws Exception {
     Snyk.Config config = new Snyk.Config(System.getenv("TEST_SNYK_TOKEN"));
