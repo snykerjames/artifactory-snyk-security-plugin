@@ -32,11 +32,11 @@ public class SnykHttpRequestBuilder {
   }
 
   public SnykHttpRequestBuilder withQueryParam(String key, String value) {
-    this.queryParams.put(key, value);
+    withQueryParam(key, Optional.ofNullable(value));
     return this;
   }
 
-  public SnykHttpRequestBuilder withOptionalQueryParam(String key, Optional<String> value) {
+  public SnykHttpRequestBuilder withQueryParam(String key, Optional<String> value) {
     value.ifPresent(v -> this.queryParams.put(key, v));
     return this;
   }
